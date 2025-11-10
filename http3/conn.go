@@ -465,3 +465,6 @@ func (c *Conn) Settings() *Settings { return c.settings }
 
 // Context returns the context of the underlying QUIC connection.
 func (c *Conn) Context() context.Context { return c.ctx }
+
+// GetRawQuicConn returns the raw quic connection
+func (c *Conn) GetRawQuicConn() *quic.Conn { return c.conn }

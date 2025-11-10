@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/quic-go/qpack"
+	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3/qlog"
 
 	"golang.org/x/net/http/httpguts"
@@ -393,4 +394,22 @@ func bodyAllowedForStatus(status int) bool {
 		return false
 	}
 	return true
+}
+
+// ConnFromWriter convert http3 http.ResponseWriter to http3.Conn
+func ConnFromWriter(w http.ResponseWriter, r http.Request) (*Conn, error) {
+	if r.Method != http.MethodConnect {
+		return nil, http.ErrNotSupported
+	}
+	conn := w.(Hijacker).Connection()
+	return conn, nil
+}
+
+// QuicConnFromWriter convert http.ResponseWriter direactly to quic.Conn
+func QuicConnFromWriter(w http.ResponseWriter, r http.Request) (*quic.Conn, error) {
+	conn, err := ConnFromWriter(w, r)
+	if err != nil {
+		return nil, err
+	}
+	return conn.GetRawQuicConn(), nil
 }
