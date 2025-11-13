@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/quic-go/quic-go"
+	"github.com/quic-go/quic-go/http3"
 	"github.com/quic-go/quic-go/http3/qlog"
 	"github.com/quic-go/quic-go/qlogwriter"
 	"github.com/quic-go/quic-go/quicvarint"
@@ -236,6 +237,18 @@ func (s *Server) Serve(conn net.PacketConn) error {
 	defer s.removeListener(ln)
 
 	return s.serveListener(*ln)
+}
+
+func (s *Server) Upgrade(w http.ResponseWriter, r http.Request) (*http3.Conn, *http3.Stream, error) {
+	hijacker, ok := w.(Hijacker)
+	if !ok {
+		return nil, nil, errors.New("hijacker not found")
+	}
+
+	conn := hijacker.Connection()
+	stream := w.(http3.HTTPStreamer).HTTPStream()
+
+	return conn, stream, nil
 }
 
 // init initializes the contexts used for shutting down the server.
